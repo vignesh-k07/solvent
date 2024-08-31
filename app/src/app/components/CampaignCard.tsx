@@ -1,9 +1,8 @@
 import { formatCurrency } from "@/utils/constants";
-import { web3 } from "@coral-xyz/anchor";
+import { web3, BN} from "@coral-xyz/anchor";
 import Image from "next/image";
 import React from "react";
 import { FaDonate } from "react-icons/fa";
-import BN from "bn.js"; // Import BN
 
 const styles = {
   card: `w-full sm:w-80 h-fit min-h-80 flex flex-col gap-2 rounded-lg bg-purple-500 bg-opacity-5 transition-opacity duration-100 ease-in-out cursor-pointer`,
