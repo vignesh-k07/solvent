@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Program, AnchorProvider, web3} from "@coral-xyz/anchor";
+import { Program, AnchorProvider, web3,BN} from "@coral-xyz/anchor";
 import { SOLVENT_PROGRAM_INTERFACE } from "@/utils/constants";
 import {
   useAnchorWallet,
@@ -10,7 +10,6 @@ import {
 
 import { IoSearchOutline } from "react-icons/io5";
 
-import BN from "bn.js"; // Import BN
 import {
   Keypair,
   LAMPORTS_PER_SOL,
