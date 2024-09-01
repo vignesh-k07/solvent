@@ -29,7 +29,7 @@ const FormField = ({
       {isTextArea ? (
         <textarea
           required
-          // value={value}
+          value={value}
           onChange={handleChange}
           rows={10}
           placeholder={placeholder}
@@ -38,7 +38,7 @@ const FormField = ({
       ) : (
         <input
           required
-          // value={value}
+          value={value}
           onChange={handleChange}
           type={inputType}
           step="0.1"
