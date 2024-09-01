@@ -1,28 +1,19 @@
 "use client";
-import { SOLVENT_PROGRAM_INTERFACE } from "@/utils/constants";
-import { AnchorProvider, BN, Program, web3 } from "@coral-xyz/anchor";
-import {
-  useAnchorWallet,
-  useConnection,
-  useWallet,
-} from "@solana/wallet-adapter-react";
-import { useEffect, useState } from "react";
 
 import { IoSearchOutline } from "react-icons/io5";
 
-import { SolventFundraiser } from "@/types/solvent_fundraiser"; // Import the crowdfunding type
-import {
-  Keypair,
-  LAMPORTS_PER_SOL,
-  PublicKey
-} from "@solana/web3.js";
 import Link from "next/link";
 import { GrDashboard } from "react-icons/gr";
-import FundCard from "../../components/FundCard";
+import { ICreateCampaign, useSolventContext } from "@/context/solvent-context";
+import { useEffect, useState } from "react";
+import { Icon } from "next/dist/lib/metadata/types/metadata-types";
+import { FundCard } from "@/components";
+import { PublicKey } from "@solana/web3.js";
+import { BN, web3 } from "@coral-xyz/anchor";
 
 const styles = {
   dashboard: `w-full h-screen flex flex-col`,
-  dashboardHeaderWrapper: `w-full h-fit min-h-28 px-6 sm:px-8 flex items-center border-b-[1px] border-[#EEF7FF] border-opacity-5 rouded-md`,
+  dashboardHeaderWrapper: `w-full h-fit min-h-28 px-6 sm:px-8 py-2 flex items-center border-b-[1px] border-[#EEF7FF] border-opacity-5 rouded-md`,
   dashboardHeader: `w-full xl:w-8/12 h-fit flex flex-wrap items-center justify-between gap-2 mx-auto`,
   dashBoardNav: `w-fit h-full flex items-center justify-center gap-5`,
   dashBoardNavIcon: `px-2 cursor-pointer`,
@@ -35,23 +26,41 @@ const styles = {
   dashboardBodyWrapper: `w-full h-fit min-h-96 px-2 border-b-[1px] border-[#EEF7FF] border-opacity-5 rouded-md`,
   dashboardBody: `w-full xl:w-10/12 h-full flex flex-wrap items-center justify-start gap-10 mx-auto px-2 py-10`,
 };
-
+export interface ICampaign {
+  publicKey: PublicKey;
+  owner: PublicKey;
+  title: string;
+  description: string;
+  target: BN;
+  deadline: BN;
+  amountCollected: BN;
+  totalMatched: BN;
+  image: string;
+  donators: PublicKey[];
+  donations: PublicKey[];
+  status: {
+    active?: {};
+    cancelled?: {};
+    completed?: {};
+  };
+}
 const Dashboard = () => {
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-  const wallet = useAnchorWallet();
-  const { connection } = useConnection();
-  const { publicKey, signTransaction, sendTransaction } = useWallet();
+  const { getCampaigns, mountedRef } = useSolventContext();
+  const [campaigns, setCampaigns] = useState<ICampaign[]>([]);
 
-  const [campaignAccounts, setCampaignAccounts] = useState<PublicKey[]>([]);
-
-
-
+  //get campaigns
   useEffect(() => {
-    if (campaigns.length === 0) {
-      return;
-    }
-    console.log("Campaigns:", campaigns);
-  }, [campaigns]);
+    const getAllCampaigns = async () => {
+      try {
+        const campaigns = await getCampaigns();
+        setCampaigns(campaigns);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getAllCampaigns();
+    // eslint-disable-next-line
+  }, [mountedRef]);
 
   return (
     <section className={styles.dashboard}>
@@ -65,7 +74,10 @@ const Dashboard = () => {
           </div>
           <div className={styles.searchContainer}>
             <div className={styles.inputLogoContainer}>
-              <IoSearchOutline color="#EEF7FF" className={styles.inputLogoIcon} />
+              <IoSearchOutline
+                color="#EEF7FF"
+                className={styles.inputLogoIcon}
+              />
             </div>
 
             <input
@@ -85,19 +97,14 @@ const Dashboard = () => {
       </div>
       <div className={styles.dashboardBodyWrapper}>
         <div className={styles.dashboardBody}>
-          {campaigns.length > 0 &&
-            campaigns.map((campaign, index) => (
-              <FundCard key={index} {...campaign} />
-            ))}
-          {/* {
+          {
             //@ts-ignore
-            campaigns.map((campaign, index) => (
-              <CampaignCard key={index} campaign={campaign} />
+            campaigns && campaigns.length > 0 && campaigns.map((el, index) => (
+              <FundCard key={index} campaign={el}/>
             ))
-          } */}
+          }
         </div>
       </div>
-      {/* <CampaignDashboard /> */}
     </section>
   );
 };

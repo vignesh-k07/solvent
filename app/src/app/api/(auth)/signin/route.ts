@@ -20,10 +20,12 @@ import { JWT_EXPIRATION, JWT_SECRET } from "@/utils/constants";
 
 export const POST = async (req: Request) => {
   try {
-    const { host, publicKey, signature } = await req.json();
+    const { host, publicKey, nonce, signature, } = await req.json();
 
     const message = new TextEncoder().encode(
-      `${host} wants you to sign in with your Solana account:\n${publicKey}\n\nPlease sign into Solvent using your wallet.`
+      `${
+        host
+      } wants you to sign in with your Solana account:\n${publicKey}\n\nPlease sign in to verify you are the owner of the wallet.\n\n${nonce}`
     );
 
     const result = nacl.sign.detached.verify(
@@ -31,7 +33,7 @@ export const POST = async (req: Request) => {
       bs58.decode(signature),
       new PublicKey(publicKey).toBytes()
     );
-
+console.log("result: " + result);
     if (!result) {
       return new NextResponse("Incorrect signature", { status: 411 });
     }
