@@ -1,12 +1,12 @@
 [package]
-name = "solvent-fundraiser"
+name = "solvent"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "solvent_fundraiser"
+name = "solvent"
 
 [features]
 default = []

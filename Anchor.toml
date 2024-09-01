@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-solvent_fundraiser = "6KS28d7UV7LEJvEYpzj8QRcwAJbLhp4FFMvyHmVEuBLR"
+solvent = "AkGXFCnWivhLPY3qAY9973BV2XCLBv9UZKYM3YyENmV3"
 
 [registry]
 url = "https://api.apr.dev"

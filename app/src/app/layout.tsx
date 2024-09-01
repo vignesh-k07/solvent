@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Chakra_Petch } from "next/font/google";
 import "./globals.css";
 
-import AppWalletProvider from "./components/AppWalletProvider";
-import Appbar from "./components/Appbar";
+import AppWalletProvider from "../components/AppWalletProvider";
+import Appbar from "../components/Appbar";
 
 import { Toaster } from 'react-hot-toast';
 

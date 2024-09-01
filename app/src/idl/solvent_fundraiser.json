@@ -1,0 +1,505 @@
+{
+  "address": "AkGXFCnWivhLPY3qAY9973BV2XCLBv9UZKYM3YyENmV3",
+  "metadata": {
+    "name": "solvent_fundraiser",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "commit_funds",
+      "discriminator": [
+        242,
+        226,
+        172,
+        204,
+        143,
+        241,
+        207,
+        248
+      ],
+      "accounts": [
+        {
+          "name": "matcher",
+          "writable": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global_pool",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "create_campaign",
+      "discriminator": [
+        111,
+        131,
+        187,
+        98,
+        160,
+        193,
+        114,
+        244
+      ],
+      "accounts": [
+        {
+          "name": "campaign",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "target",
+          "type": "u64"
+        },
+        {
+          "name": "deadline",
+          "type": "i64"
+        },
+        {
+          "name": "image",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "donate_to_campaign",
+      "discriminator": [
+        11,
+        213,
+        34,
+        2,
+        196,
+        121,
+        15,
+        216
+      ],
+      "accounts": [
+        {
+          "name": "campaign",
+          "writable": true
+        },
+        {
+          "name": "donor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global_pool",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "get_campaigns",
+      "discriminator": [
+        1,
+        39,
+        82,
+        120,
+        13,
+        66,
+        218,
+        232
+      ],
+      "accounts": [
+        {
+          "name": "campaign_list",
+          "writable": true
+        }
+      ],
+      "args": [],
+      "returns": {
+        "vec": "pubkey"
+      }
+    },
+    {
+      "name": "initialize_global_pool",
+      "discriminator": [
+        234,
+        145,
+        127,
+        168,
+        76,
+        48,
+        188,
+        87
+      ],
+      "accounts": [
+        {
+          "name": "global_pool",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "total_matching_funds",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "mark_inactive",
+      "discriminator": [
+        77,
+        63,
+        143,
+        104,
+        53,
+        126,
+        92,
+        6
+      ],
+      "accounts": [
+        {
+          "name": "campaign",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdraw_funds",
+      "discriminator": [
+        241,
+        36,
+        29,
+        111,
+        208,
+        31,
+        104,
+        217
+      ],
+      "accounts": [
+        {
+          "name": "campaign",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdraw_unmatched_funds",
+      "discriminator": [
+        104,
+        242,
+        5,
+        251,
+        105,
+        227,
+        100,
+        175
+      ],
+      "accounts": [
+        {
+          "name": "matcher",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "global_pool",
+          "writable": true
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Campaign",
+      "discriminator": [
+        50,
+        40,
+        49,
+        11,
+        157,
+        220,
+        229,
+        192
+      ]
+    },
+    {
+      "name": "CampaignList",
+      "discriminator": [
+        108,
+        125,
+        46,
+        147,
+        118,
+        247,
+        85,
+        52
+      ]
+    },
+    {
+      "name": "GlobalPool",
+      "discriminator": [
+        162,
+        244,
+        124,
+        37,
+        148,
+        94,
+        28,
+        50
+      ]
+    },
+    {
+      "name": "Matcher",
+      "discriminator": [
+        76,
+        0,
+        38,
+        226,
+        23,
+        130,
+        67,
+        35
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "NotOwner",
+      "msg": "You must be the owner of the campaign to withdraw funds."
+    },
+    {
+      "code": 6001,
+      "name": "CampaignInactive",
+      "msg": "The campaign is currently inactive or completed."
+    },
+    {
+      "code": 6002,
+      "name": "CampaignAlreadyInactive",
+      "msg": "The campaign is already inactive."
+    },
+    {
+      "code": 6003,
+      "name": "CannotWithdraw",
+      "msg": "You cannot withdraw funds until the campaign is inactive or completed."
+    },
+    {
+      "code": 6004,
+      "name": "InvalidDonationAmount",
+      "msg": "Invalid donation amount. Amount must be greater than zero."
+    },
+    {
+      "code": 6005,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds to make the donation."
+    },
+    {
+      "code": 6006,
+      "name": "NoUnmatchedFunds",
+      "msg": "No unmatched funds available to withdraw."
+    }
+  ],
+  "types": [
+    {
+      "name": "Campaign",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "target",
+            "type": "u64"
+          },
+          {
+            "name": "deadline",
+            "type": "i64"
+          },
+          {
+            "name": "amount_collected",
+            "type": "u64"
+          },
+          {
+            "name": "total_matched",
+            "type": "u64"
+          },
+          {
+            "name": "image",
+            "type": "string"
+          },
+          {
+            "name": "donators",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "donations",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "CampaignStatus"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CampaignList",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "campaigns",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CampaignStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Inactive"
+          },
+          {
+            "name": "Completed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlobalPool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "total_funds",
+            "type": "u64"
+          },
+          {
+            "name": "matchers",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Matcher"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Matcher",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "total_contributed",
+            "type": "u64"
+          },
+          {
+            "name": "unmatched_funds",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}
