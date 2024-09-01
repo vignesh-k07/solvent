@@ -7,16 +7,7 @@ import ProfilePlaceholder from "./ProfilePlaceholder";
 import prevImage from "../../public/images/prevImg.png"
 import { ICampaign } from "@/app/dashboard/page";
 
-const data = {
-  owner: "owner",
-  title: "title",
-  description: "description",
-  target: 100,
-  deadline: "100",
-  amountCollected: 100,
-  image:
-    "https://www.rainforest-alliance.org/wp-content/uploads/2020/11/peruvian-amazon-rainforest-canopy.jpg",
-};
+
 
 interface IProps {
   campaign: ICampaign;
@@ -33,7 +24,7 @@ const FundCard = ({
 
   return (
     <div
-      className="sm:w-[288px] w-full rounded-[15px] bg-[#1c1c24] cursor-pointer shadow-lg shadow-[#7A1CAC]/20 hover:shadow-[#7A1CAC]/50  hover:scale-[101%] transition-all duration-300 ease-in-out"
+      className="sm:w-[288px] w-full rounded-[15px] bg-[#1c1c24] cursor-pointer shadow-lg shadow-[#7C93C3]/5 hover:shadow-[#7C93C3]/10  hover:scale-[101%] transition-all duration-300 ease-in-out"
       onClick={handleClick}
     >
       <Image

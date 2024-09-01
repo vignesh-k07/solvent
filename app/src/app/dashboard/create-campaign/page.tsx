@@ -40,6 +40,8 @@ const previewItem: ICreateCampaign = {
   deadline: "",
   image: "",
 };
+
+
 const StartACampaign = () => {
   const { createCampaign } = useSolventContext();
   const { push } = useRouter();
@@ -130,13 +132,13 @@ const StartACampaign = () => {
           throw new Error("Provide valid image URL. The image could not be loaded.");
         }
       });
-
+      console.log(form, "form");
       const transactionId = await createCampaign(form);
       console.log("Create Campaign: " + transactionId);
       toast.success("Campaign created successfully!");
       setIsLoading(false);
       setForm(previewItem);
-      push("/");
+      // push("/d");
     } catch (error: any) {
       toast.error("Error creating campaign: " + error?.message);
       console.log(error);

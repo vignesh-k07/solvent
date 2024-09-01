@@ -14,44 +14,6 @@ export type SolventFundraiser = {
   },
   "instructions": [
     {
-      "name": "commitFunds",
-      "discriminator": [
-        242,
-        226,
-        172,
-        204,
-        143,
-        241,
-        207,
-        248
-      ],
-      "accounts": [
-        {
-          "name": "matcher",
-          "writable": true
-        },
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "globalPool",
-          "writable": true
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        }
-      ]
-    },
-    {
       "name": "createCampaign",
       "discriminator": [
         111,
@@ -131,10 +93,6 @@ export type SolventFundraiser = {
         {
           "name": "owner",
           "writable": true
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
@@ -143,29 +101,6 @@ export type SolventFundraiser = {
           "type": "u64"
         }
       ]
-    },
-    {
-      "name": "getCampaigns",
-      "discriminator": [
-        1,
-        39,
-        82,
-        120,
-        13,
-        66,
-        218,
-        232
-      ],
-      "accounts": [
-        {
-          "name": "campaignList",
-          "writable": true
-        }
-      ],
-      "args": [],
-      "returns": {
-        "vec": "pubkey"
-      }
     },
     {
       "name": "initializeGlobalPool",
@@ -297,19 +232,6 @@ export type SolventFundraiser = {
       ]
     },
     {
-      "name": "campaignList",
-      "discriminator": [
-        108,
-        125,
-        46,
-        147,
-        118,
-        247,
-        85,
-        52
-      ]
-    },
-    {
       "name": "globalPool",
       "discriminator": [
         162,
@@ -425,42 +347,7 @@ export type SolventFundraiser = {
           },
           {
             "name": "status",
-            "type": {
-              "defined": {
-                "name": "campaignStatus"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "campaignList",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "campaigns",
-            "type": {
-              "vec": "pubkey"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "campaignStatus",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "active"
-          },
-          {
-            "name": "inactive"
-          },
-          {
-            "name": "completed"
+            "type": "string"
           }
         ]
       }
