@@ -9,6 +9,7 @@ interface IFormField {
     e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
   ) => void;
   value: string;
+  disabled?: boolean;
 }
 
 const FormField = ({
@@ -18,6 +19,7 @@ const FormField = ({
   isTextArea,
   handleChange,
   value,
+  disabled
 }: IFormField) => {
   return (
     <label className="w-full max-w-500 flex flex-col">
@@ -29,22 +31,37 @@ const FormField = ({
       {isTextArea ? (
         <textarea
           required
-          value={value}
+          // value={value}
           onChange={handleChange}
-          rows={10}
+          rows={7}
           placeholder={placeholder}
           className="w-full py-[15px] sm:px-[25px] px-[15px] outline-none border-[1px] border-[#EEF7FF] border-opacity-20 bg-transparent text-[#EEF7FF] text-[14px] placeholder:text-[#EEF7FF]/50 rounded-[10px]"
+          disabled={disabled}
         />
       ) : (
-        <input
-          required
-          value={value}
-          onChange={handleChange}
-          type={inputType}
-          step="0.1"
-          placeholder={placeholder}
-          className="w-full py-[15px] sm:px-[25px] px-[15px] outline-none border-[1px] border-[#EEF7FF] border-opacity-20 bg-transparent text-[#EEF7FF] text-[14px] placeholder:text-[#EEF7FF]/50 rounded-[10px]"
-        />
+        inputType === "date" ? (
+          <input
+            required
+            // value={value}
+            onChange={handleChange}
+            type={inputType}
+            step="0.1"
+            placeholder={placeholder}
+            className="w-full py-[15px] sm:px-[25px] px-[15px] outline-none border-[1px] border-[#EEF7FF] border-opacity-20 bg-transparent text-[#EEF7FF] text-[14px] placeholder:text-[#EEF7FF]/50 rounded-[10px]"
+            disabled={disabled}
+          />
+        ) : (
+          <input
+            required
+            value={value}
+            onChange={handleChange}
+            type={inputType}
+            step="0.1"
+            placeholder={placeholder}
+            className="w-full py-[15px] sm:px-[25px] px-[15px] outline-none border-[1px] border-[#EEF7FF] border-opacity-20 bg-transparent text-[#EEF7FF] text-[14px] placeholder:text-[#EEF7FF]/50 rounded-[10px]"
+            disabled={disabled}
+          />
+        )
       )}
     </label>
   );

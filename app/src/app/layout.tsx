@@ -6,6 +6,7 @@ import AppWalletProvider from "../components/AppWalletProvider";
 import Appbar from "../components/Appbar";
 
 import { Toaster } from 'react-hot-toast';
+import SolventContextProvider from "@/context/solvent-context";
 
 const chakraPetch = Chakra_Petch({
   subsets: ["latin"],
@@ -26,12 +27,15 @@ export default function RootLayout({
     <html lang="en">
       <body className={chakraPetch.className}>
         <AppWalletProvider>
+          <SolventContextProvider>
           <Appbar />
           {children}
           <Toaster
           position="bottom-right"
           reverseOrder={false}
           />
+          </SolventContextProvider>
+         
         </AppWalletProvider>
       </body>
     </html>

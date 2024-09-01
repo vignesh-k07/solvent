@@ -1,5 +1,6 @@
 import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
 import idl from "../idl/solvent_fundraiser.json";
+import jwt from "jsonwebtoken";
 
 // MongoDB URI
 export const MONGODB_URI = process.env.MONGODB_URI ?? "";
@@ -34,15 +35,13 @@ export function formatCurrency(amount: number): string {
 }
 
 
-export const formatWalletAddress = (
-  address: string,
-): string => {
-  if (address.length <= 5 + 4) {
+export const formatWalletAddress = (address: string): string => {
+  if (address.length <= 4) {
     return address; // Return the original address if it's too short to truncate
   }
-  const start = address.slice(0, 5);
+  const start = address.slice(0, 4);
   const end = address.slice(-4);
-  return `${start}...${end}`;
+  return `${start}..${end}`;
 };
 
 
@@ -77,4 +76,26 @@ export const calculateBarPercentage = (goal:number, raisedAmount:number) => {
   
     img.onload = () => callback(true);
     img.onerror = () => callback(false);
+  };
+
+  export const generateRandomBase58Hash = (length = 16) => {
+    const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    let hash = '';
+    for (let i = 0; i < length; i++) {
+      hash += ALPHABET[Math.floor(window.crypto.getRandomValues(new Uint8Array(1))[0] % ALPHABET.length)];
+    }
+    return hash;
+  }
+  
+
+
+  //check if the token matches the wallet
+  export const checkIftheTokenMatchesTheWallet = async (wallet: string, jwtToken: string) => {
+      const decodedToken = jwt.decode(jwtToken);
+      //@ts-ignore
+      if (decodedToken?.publicKey !== wallet) {
+        return false;
+      } else {
+        return true;
+      }
   };

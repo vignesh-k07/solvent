@@ -2,7 +2,13 @@
 
 import { SolventFundraiser } from "@/types/solvent_fundraiser";
 import { SOLVENT_PROGRAM_INTERFACE } from "@/utils/constants";
-import { Program, AnchorProvider, BN, web3 } from "@coral-xyz/anchor";
+import {
+  Program,
+  AnchorProvider,
+  BN,
+  web3,
+  ProgramAccount,
+} from "@coral-xyz/anchor";
 import { WalletAdapterProps } from "@solana/wallet-adapter-base";
 import {
   useAnchorWallet,
@@ -26,7 +32,7 @@ import React, {
   useState,
 } from "react";
 
-type TokenSwapContextProviderProps = {
+type SolventContextProviderProps = {
   children: React.ReactNode;
 };
 
@@ -40,21 +46,23 @@ export interface ICreateCampaign {
   image: string;
 }
 
-type TokenSwapContextValue = {
+type SolventContextValue = {
   theme: Theme;
   makePaymentForRentExemption: (
     toAccount: Keypair,
     lamports: number
   ) => Promise<string>;
+  createCampaign: (data: ICreateCampaign) => Promise<any>;
+  getCampaigns: () => Promise<any>;
 };
 
-export const TokenSwapContext = createContext<TokenSwapContextValue | null>(
+export const SolventContext = createContext<SolventContextValue | null>(
   null
 );
 
-export default function TokenSwapContextProvider({
+export default function SolventContextProvider({
   children,
-}: TokenSwapContextProviderProps) {
+}: SolventContextProviderProps) {
   const [theme, setTheme] = useState<Theme>("light");
 
   // Define reference for tracking component mounted state.
@@ -143,40 +151,35 @@ export default function TokenSwapContextProvider({
     const initAccounts = {
       campaign: campaignAccount.publicKey,
       payer: wallet.publicKey,
-      system_program: web3.SystemProgram.programId
+      system_program: web3.SystemProgram.programId,
     };
 
-    const targetInLamports = new BN(
+    const targetInLamportsBn = new BN(
       Number(campaignData.target) * LAMPORTS_PER_SOL
     );
 
     const deadline = new BN(campaignData.deadline);
 
-    // const txn = await program.methods
-    //   .createCampaign(
-    //     campaignData.title,
-    //     campaignData.description,
-    //     targetInLamports,
-    //     deadline,
-    //     campaignData.image
-    //   )
-    //   .accounts(initAccounts)
-    //   .signers([campaignAccount])
-    //   .rpc();
+    const txn = await program.methods
+      .createCampaign(
+        campaignData.title,
+        campaignData.description,
+        targetInLamportsBn,
+        deadline,
+        campaignData.image
+      )
+      .accounts(initAccounts)
+      .signers([campaignAccount])
+      .rpc();
 
-    // return txn;
+    return txn;
   };
 
   //get campaigns
-
-  const getCampaigns = async () => {
-    if (
-      !wallet ||
-      !connection ||
-      !signTransaction ||
-      !publicKey
-    ) {
-      throw new Error("Missing required parameters.");
+  const getCampaigns = async (): Promise<any> => {
+    if (!wallet || !connection || !signTransaction || !publicKey) {
+      console.log("getCampaigns. Missing required parameters.");
+      return;
     }
 
     const provider = new AnchorProvider(connection, wallet, {
@@ -191,27 +194,32 @@ export default function TokenSwapContextProvider({
     ) as Program<SolventFundraiser>;
 
     // Fetch the campaign details using the public key
-    const campaigns = await program.account.campaign.all();
+    const campaigns = (await program.account.campaign.all()).map((el) => ({
+      publicKey: el.publicKey.toString(), // Convert PublicKey to string
+      ...el.account, // Spread the account properties directly
+  }));
     return campaigns;
   };
 
   return (
-    <TokenSwapContext.Provider
+    <SolventContext.Provider
       value={{
         theme,
         makePaymentForRentExemption,
+        createCampaign,
+        getCampaigns,
       }}
     >
       {children}
-    </TokenSwapContext.Provider>
+    </SolventContext.Provider>
   );
 }
 
-export const useTokenSwapContext = () => {
-  const context = useContext(TokenSwapContext);
+export const useSolventContext = () => {
+  const context = useContext(SolventContext);
   if (!context) {
     throw new Error(
-      "TokenSwapContext should be used within TokenSwapContextProvider"
+      "SolventContext should be used within SolventContextProvider"
     );
   }
   return context;
