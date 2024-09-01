@@ -26,6 +26,7 @@ import {
 //ts-ignore
 import React, {
   createContext,
+  MutableRefObject,
   useContext,
   useEffect,
   useRef,
@@ -54,6 +55,7 @@ type SolventContextValue = {
   ) => Promise<string>;
   createCampaign: (data: ICreateCampaign) => Promise<any>;
   getCampaigns: () => Promise<any>;
+  mountedRef: MutableRefObject<boolean>;
 };
 
 export const SolventContext = createContext<SolventContextValue | null>(
@@ -208,6 +210,7 @@ export default function SolventContextProvider({
         makePaymentForRentExemption,
         createCampaign,
         getCampaigns,
+        mountedRef
       }}
     >
       {children}

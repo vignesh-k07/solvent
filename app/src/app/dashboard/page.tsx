@@ -45,7 +45,7 @@ export interface ICampaign {
   };
 }
 const Dashboard = () => {
-  const { getCampaigns } = useSolventContext();
+  const { getCampaigns, mountedRef } = useSolventContext();
   const [campaigns, setCampaigns] = useState<ICampaign[]>([]);
 
   //get campaigns
@@ -60,7 +60,7 @@ const Dashboard = () => {
     };
     getAllCampaigns();
     // eslint-disable-next-line
-  }, []);
+  }, [mountedRef]);
 
   return (
     <section className={styles.dashboard}>
@@ -99,7 +99,7 @@ const Dashboard = () => {
         <div className={styles.dashboardBody}>
           {
             //@ts-ignore
-            campaigns.map((el, index) => (
+            campaigns && campaigns.length > 0 && campaigns.map((el, index) => (
               <FundCard key={index} campaign={el}/>
             ))
           }
