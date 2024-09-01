@@ -10,6 +10,7 @@ import { Icon } from "next/dist/lib/metadata/types/metadata-types";
 import { FundCard } from "@/components";
 import { PublicKey } from "@solana/web3.js";
 import { BN, web3 } from "@coral-xyz/anchor";
+import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
 
 const styles = {
   dashboard: `w-full h-screen flex flex-col`,
@@ -45,8 +46,10 @@ export interface ICampaign {
   };
 }
 const Dashboard = () => {
-  const { getCampaigns, mountedRef } = useSolventContext();
+  const { getCampaigns} = useSolventContext();
   const [campaigns, setCampaigns] = useState<ICampaign[]>([]);
+  const wallet = useAnchorWallet(); //wallet for sign and pay
+  const { connection } = useConnection(); //connection for send transaction
 
   //get campaigns
   useEffect(() => {
@@ -60,7 +63,7 @@ const Dashboard = () => {
     };
     getAllCampaigns();
     // eslint-disable-next-line
-  }, [mountedRef]);
+  }, [wallet, connection]);
 
   return (
     <section className={styles.dashboard}>
