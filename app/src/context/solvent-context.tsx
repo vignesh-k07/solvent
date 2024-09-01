@@ -179,7 +179,7 @@ export default function SolventContextProvider({
 
   //get campaigns
   const getCampaigns = async (): Promise<any> => {
-    if (!wallet || !connection || !signTransaction || !publicKey) {
+    if (!wallet || !connection) {
       console.log("getCampaigns. Missing required parameters.");
       return;
     }
