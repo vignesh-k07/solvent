@@ -33,7 +33,7 @@ const chakraPetch = Chakra_Petch({
 });
 
 const styles = {
-  appBar: `w-full h-fit sm:h-14 px-2 bg-[#111314] border-b-[1px] border-[#EEF7FF] border-opacity-5`,
+  appBar: `w-full h-fit sm:h-14 px-2 bg-[#2C2D30] bg-opacity-10 border-b-[1px] border-[#EEF7FF] border-opacity-5`,
   wrapper: `w-full xl:w-10/12 h-full flex flex-wrap items-center justify-between gap-2 mx-auto`,
   logoContainer: `w-fit h-full flex items-center justify-center gap-2 cursor-pointer py-3`,
   logoIcon: `w-8 h-8`,

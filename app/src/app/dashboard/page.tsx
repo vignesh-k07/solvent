@@ -58,7 +58,7 @@ const Dashboard = () => {
     const getAllCampaigns = async () => {
       try {
         const campaigns = await getCampaigns();
-        setCampaigns(campaigns);
+        setCampaigns(campaigns.reverse());
       } catch (error) {
         console.log(error);
       }

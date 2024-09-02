@@ -5,7 +5,11 @@ import { IoSearchOutline } from "react-icons/io5";
 import { FundCard } from "@/components";
 import { useSolventContext } from "@/context/solvent-context";
 import { BN } from "@coral-xyz/anchor";
-import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react";
+import {
+  useAnchorWallet,
+  useConnection,
+  useWallet,
+} from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -45,7 +49,7 @@ export interface ICampaign {
   };
 }
 const Campaigns = () => {
-  const { getCampaigns} = useSolventContext();
+  const { getCampaigns } = useSolventContext();
   const [campaigns, setCampaigns] = useState<ICampaign[]>([]);
   const wallet = useAnchorWallet(); //wallet for sign and pay
   const { connection } = useConnection(); //connection for send transaction
@@ -58,7 +62,7 @@ const Campaigns = () => {
       try {
         const campaigns = await getCampaigns();
         console.log(campaigns);
-        setCampaigns(campaigns);
+        setCampaigns(campaigns.reverse());
       } catch (error) {
         console.log(error);
       }
@@ -102,12 +106,19 @@ const Campaigns = () => {
       </div>
       <div className={styles.dashboardBodyWrapper}>
         <div className={styles.dashboardBody}>
-          {
-            //@ts-ignore
-            campaigns && campaigns?.length > 0 && campaigns.map((el, index) => (
-              <FundCard key={index} campaign={el}/>
-            ))
-          }
+          {campaigns &&
+            campaigns.length > 0 &&
+            campaigns.map((el, index) => {
+              const serializedCampaign = encodeURIComponent(JSON.stringify(el));
+              return (
+                <Link
+                  href={`/campaigns/donate?campaign=${serializedCampaign}`}
+                  key={index}
+                >
+                  <FundCard campaign={el} />
+                </Link>
+              );
+            })}
         </div>
       </div>
     </section>
