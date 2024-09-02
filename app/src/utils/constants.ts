@@ -1,6 +1,7 @@
 import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
 import idl from "../idl/solvent_fundraiser.json";
 import jwt from "jsonwebtoken";
+import { BN, web3 } from "@coral-xyz/anchor";
 
 // MongoDB URI
 export const MONGODB_URI = process.env.MONGODB_URI ?? "";
@@ -53,8 +54,6 @@ export const getRandomColor = () => {
   }
   return color;
 };
-
-import BN from 'bn.js';
 
 export const daysLeft = (deadlineBn: BN) => {
     // Get the current time in milliseconds as a BN instance
