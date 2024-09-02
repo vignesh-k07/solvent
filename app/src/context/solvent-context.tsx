@@ -158,8 +158,7 @@ export default function SolventContextProvider({
       Number(campaignData.target) * LAMPORTS_PER_SOL
     );
 
-    const deadlineDate = new Date(campaignData.deadline);
-    const deadlineBn = new BN(Math.floor(deadlineDate.getTime() / 1000));
+    const deadlineBn = new BN(new Date(campaignData.deadline).getTime());
 
     const txn = await program.methods
       .createCampaign(

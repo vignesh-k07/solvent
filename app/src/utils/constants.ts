@@ -54,13 +54,21 @@ export const getRandomColor = () => {
   return color;
 };
 
-export const daysLeft = (deadline: number) => {
-    const difference = new Date(deadline).getTime() - Date.now();
-    const remainingDays = difference / (1000 * 3600 * 24);
-  
-    return remainingDays.toFixed(0);
-  };
+import BN from 'bn.js';
 
+export const daysLeft = (deadlineBn: BN) => {
+    // Get the current time in milliseconds as a BN instance
+    const currentTimeBn = new BN(Date.now());
+
+    // Calculate the difference in milliseconds
+    const differenceBn = deadlineBn.sub(currentTimeBn);
+
+    // Convert the difference to days
+    const remainingDays = differenceBn.div(new BN(1000 * 3600 * 24)); // Milliseconds in a day
+
+    // Return the remaining days as a number
+    return remainingDays.toNumber(); // Convert BN back to a number
+};
   
 export const calculateBarPercentage = (goal:number, raisedAmount:number) => {
     const percentage = Math.round((raisedAmount * 100) / goal);

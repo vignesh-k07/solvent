@@ -2,16 +2,14 @@
 
 import { IoSearchOutline } from "react-icons/io5";
 
-import Link from "next/link";
-import { GrDashboard } from "react-icons/gr";
-import { ICreateCampaign, useSolventContext } from "@/context/solvent-context";
-import { useEffect, useState } from "react";
-import { Icon } from "next/dist/lib/metadata/types/metadata-types";
 import { FundCard } from "@/components";
-import { PublicKey } from "@solana/web3.js";
-import { BN, web3 } from "@coral-xyz/anchor";
+import { useSolventContext } from "@/context/solvent-context";
+import { BN } from "@coral-xyz/anchor";
 import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { use } from "chai";
+import { PublicKey } from "@solana/web3.js";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { GrDashboard } from "react-icons/gr";
 
 const styles = {
   dashboard: `w-full h-screen flex flex-col`,
@@ -58,7 +56,7 @@ const Dashboard = () => {
     const getAllCampaigns = async () => {
       try {
         const campaigns = await getCampaigns();
-        setCampaigns(campaigns);
+        setCampaigns(campaigns.reverse());
       } catch (error) {
         console.log(error);
       }

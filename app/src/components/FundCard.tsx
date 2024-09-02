@@ -6,6 +6,7 @@ import { daysLeft, formatWalletAddress } from "../utils/constants";
 import ProfilePlaceholder from "./ProfilePlaceholder";
 import prevImage from "../../public/images/prevImg.png"
 import { ICampaign } from "@/app/dashboard/page";
+import { useEffect } from "react";
 
 
 
@@ -16,7 +17,7 @@ interface IProps {
 const FundCard = ({
   campaign
 }: IProps) => {
-  const remainingDays = daysLeft(campaign.deadline.toNumber());
+  const remainingDays = daysLeft(campaign.deadline);
 
   const handleClick = () => {
     console.log("clicked");

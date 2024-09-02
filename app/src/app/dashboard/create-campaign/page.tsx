@@ -6,15 +6,12 @@ import { FormField } from "@/components";
 import { ICreateCampaign, useSolventContext } from "@/context/solvent-context";
 import { checkIfImage, checkIftheTokenMatchesTheWallet } from "@/utils/constants";
 import {
-  useAnchorWallet,
-  useConnection,
-  useWallet,
+  useWallet
 } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { BsArrowLeftSquareFill } from "react-icons/bs";
 import { Oval } from "react-loader-spinner";
-import { JsonWebTokenError } from "jsonwebtoken";
 
 const styles = {
   campaign: `w-full h-screen flex flex-col`,
@@ -138,7 +135,7 @@ const StartACampaign = () => {
       toast.success("Campaign created successfully!");
       setIsLoading(false);
       setForm(previewItem);
-      // push("/d");
+      push("/dashboard");
     } catch (error: any) {
       toast.error("Error creating campaign: " + error?.message);
       console.log(error);
