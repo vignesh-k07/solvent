@@ -6,15 +6,12 @@ import { FormField } from "@/components";
 import { ICreateCampaign, useSolventContext } from "@/context/solvent-context";
 import { checkIfImage, checkIftheTokenMatchesTheWallet } from "@/utils/constants";
 import {
-  useAnchorWallet,
-  useConnection,
-  useWallet,
+  useWallet
 } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { BsArrowLeftSquareFill } from "react-icons/bs";
 import { Oval } from "react-loader-spinner";
-import { JsonWebTokenError } from "jsonwebtoken";
 
 const styles = {
   campaign: `w-full h-screen flex flex-col`,
