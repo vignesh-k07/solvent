@@ -145,7 +145,8 @@ export default function SolventContextProvider({
       throw new Error("Missing required parameters.");
     }
 
-    const globalPoolAccount = Keypair.generate();
+    try {
+      const globalPoolAccount = Keypair.generate();
 
     const provider = new AnchorProvider(connection, wallet, {
       preflightCommitment: "processed",
@@ -172,7 +173,6 @@ export default function SolventContextProvider({
 
     const initTokenAmountBn = new BN(0.05 * LAMPORTS_PER_SOL);
 
-
     const txnInstruction = await program.methods
       .initializeGlobalPool(initTokenAmountBn)
       .accounts(initAccounts)
@@ -181,23 +181,14 @@ export default function SolventContextProvider({
       const transaction = new Transaction().add(txnInstruction);
       console.log("Global pool initialized:");
 
-
-      const {
-        context: { slot: minContextSlot },
-        value: { blockhash, lastValidBlockHeight },
-      } = await connection.getLatestBlockhashAndContext();
-  
-      const signature = await sendTransaction(transaction, connection, {
-        minContextSlot,
-      });
-  
-      await connection.confirmTransaction({
-        blockhash,
-        lastValidBlockHeight,
-        signature,
-      });
+  // Send transaction
+    const signature = await provider.sendAndConfirm(transaction, [globalPoolAccount]);
 
        return signature;
+    } catch (error: any) {
+      console.log(error);
+      return error.message;
+    }
   };
 
   //create campaign
