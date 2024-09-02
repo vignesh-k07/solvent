@@ -10,7 +10,8 @@ import { Icon } from "next/dist/lib/metadata/types/metadata-types";
 import { FundCard } from "@/components";
 import { PublicKey } from "@solana/web3.js";
 import { BN, web3 } from "@coral-xyz/anchor";
-import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
+import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { use } from "chai";
 
 const styles = {
   dashboard: `w-full h-screen flex flex-col`,
@@ -50,7 +51,8 @@ const Dashboard = () => {
   const [campaigns, setCampaigns] = useState<ICampaign[]>([]);
   const wallet = useAnchorWallet(); //wallet for sign and pay
   const { connection } = useConnection(); //connection for send transaction
-
+  const { publicKey, signTransaction, sendTransaction } = useWallet();
+  const filterCampaigns = campaigns?.filter((el) => el.owner.toBase58() === publicKey?.toBase58());
   //get campaigns
   useEffect(() => {
     const getAllCampaigns = async () => {
@@ -102,7 +104,7 @@ const Dashboard = () => {
         <div className={styles.dashboardBody}>
           {
             //@ts-ignore
-            campaigns && campaigns.length > 0 && campaigns.map((el, index) => (
+            filterCampaigns && filterCampaigns?.length > 0 && filterCampaigns.map((el, index) => (
               <FundCard key={index} campaign={el}/>
             ))
           }

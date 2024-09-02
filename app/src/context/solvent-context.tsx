@@ -58,9 +58,7 @@ type SolventContextValue = {
   mountedRef: MutableRefObject<boolean>;
 };
 
-export const SolventContext = createContext<SolventContextValue | null>(
-  null
-);
+export const SolventContext = createContext<SolventContextValue | null>(null);
 
 export default function SolventContextProvider({
   children,
@@ -160,14 +158,15 @@ export default function SolventContextProvider({
       Number(campaignData.target) * LAMPORTS_PER_SOL
     );
 
-    const deadline = new BN(campaignData.deadline);
+    const deadlineDate = new Date(campaignData.deadline);
+    const deadlineBn = new BN(Math.floor(deadlineDate.getTime() / 1000));
 
     const txn = await program.methods
       .createCampaign(
         campaignData.title,
         campaignData.description,
         targetInLamportsBn,
-        deadline,
+        deadlineBn,
         campaignData.image
       )
       .accounts(initAccounts)
@@ -199,7 +198,7 @@ export default function SolventContextProvider({
     const campaigns = (await program.account.campaign.all()).map((el) => ({
       publicKey: el.publicKey.toString(), // Convert PublicKey to string
       ...el.account, // Spread the account properties directly
-  }));
+    }));
     return campaigns;
   };
 
@@ -210,7 +209,7 @@ export default function SolventContextProvider({
         makePaymentForRentExemption,
         createCampaign,
         getCampaigns,
-        mountedRef
+        mountedRef,
       }}
     >
       {children}

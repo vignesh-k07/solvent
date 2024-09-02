@@ -197,7 +197,9 @@ const Appbar = () => {
           <span className={styles.logoTitle}>Solvent</span>
         </Link>
 
-        <div className={styles.menuContainer}>
+        {
+          pathname !== "/" && ( 
+            <div className={styles.menuContainer}>
           {menus.map((item, index) => (
             <Link
               key={index}
@@ -212,6 +214,8 @@ const Appbar = () => {
             </Link>
           ))}
         </div>
+          )
+        }
         <>
           {mounted && (
             <div
