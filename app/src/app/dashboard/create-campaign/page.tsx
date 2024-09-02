@@ -138,7 +138,7 @@ const StartACampaign = () => {
       toast.success("Campaign created successfully!");
       setIsLoading(false);
       setForm(previewItem);
-      // push("/d");
+      push("/dashboard");
     } catch (error: any) {
       toast.error("Error creating campaign: " + error?.message);
       console.log(error);
