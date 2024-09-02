@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("AkGXFCnWivhLPY3qAY9973BV2XCLBv9UZKYM3YyENmV3");
+declare_id!("5HqykVFF3Gjo3iQYaCkmEQG7zqYaPNZC3nupXA5ndzs8");
 
 #[program]
 pub mod solvent_fundraiser {
@@ -10,6 +10,7 @@ pub mod solvent_fundraiser {
         let global_pool = &mut ctx.accounts.global_pool;
         global_pool.total_funds = total_matching_funds;
         global_pool.matchers = vec![];
+
         Ok(())
     }
 
@@ -24,7 +25,7 @@ pub mod solvent_fundraiser {
         let campaign = &mut ctx.accounts.campaign;
         let payer = &ctx.accounts.payer;
 
-        campaign.owner = payer.key(); // Assign the owner's public key
+        campaign.owner = payer.key();
         campaign.title = title;
         campaign.description = description;
         campaign.target = target;
@@ -34,9 +35,8 @@ pub mod solvent_fundraiser {
         campaign.image = image;
         campaign.donators = vec![];
         campaign.donations = vec![];
-
-        // Set status as "active"
-        campaign.status = "active".to_string(); 
+        campaign.status = CampaignStatus::Active;
+        campaign.next_withdrawal_threshold = target / 4; // Set initial threshold at 25% of the target
 
         Ok(())
     }
@@ -46,7 +46,7 @@ pub mod solvent_fundraiser {
         let donor = &mut ctx.accounts.donor;
         let global_pool = &mut ctx.accounts.global_pool;
 
-        require!(campaign.status == "active", ErrorCode::CampaignInactive);
+        require!(campaign.status == CampaignStatus::Active, ErrorCode::CampaignInactive);
         require!(amount > 0, ErrorCode::InvalidDonationAmount);
 
         let donor_lamports = **donor.to_account_info().lamports.borrow();
@@ -83,31 +83,79 @@ pub mod solvent_fundraiser {
         **donor.to_account_info().lamports.borrow_mut() -= amount;
         global_pool.total_funds -= matched_amount;
 
+        if campaign.amount_collected >= campaign.target {
+            campaign.status = CampaignStatus::Completed;
+            emit!(CampaignStatusEvent {
+                campaign: campaign.key(),
+                status: CampaignStatus::Completed,
+            });
+        }
+
         Ok(())
     }
 
-    pub fn mark_inactive(ctx: Context<MarkInactive>) -> Result<()> {
+    pub fn withdraw_at_milestone(ctx: Context<WithdrawAtMilestone>) -> Result<()> {
         let campaign = &mut ctx.accounts.campaign;
         let owner = &mut ctx.accounts.owner;
 
         require!(owner.key() == campaign.owner, ErrorCode::NotOwner);
-        require!(campaign.status == "active", ErrorCode::CampaignAlreadyInactive);
+        require!(campaign.status == CampaignStatus::Active || campaign.status == CampaignStatus::Inactive, ErrorCode::InvalidStatus);
 
-        campaign.status = "inactive".to_string();
+        if campaign.amount_collected >= campaign.next_withdrawal_threshold {
+            let amount_to_withdraw = campaign.next_withdrawal_threshold;
+            campaign.next_withdrawal_threshold += campaign.target / 4;
+
+            **owner.to_account_info().lamports.borrow_mut() += amount_to_withdraw;
+            emit!(MilestoneWithdrawalEvent {
+                campaign: campaign.key(),
+                milestone: campaign.next_withdrawal_threshold,
+                amount: amount_to_withdraw,
+            });
+
+            if campaign.next_withdrawal_threshold > campaign.target {
+                campaign.status = CampaignStatus::Completed;
+            }
+        } else {
+            return err!(ErrorCode::InvalidMilestone);
+        }
+
         Ok(())
     }
 
-    pub fn withdraw_funds(ctx: Context<WithdrawFunds>) -> Result<()> {
+    pub fn set_campaign_inactive(ctx: Context<SetCampaignInactive>) -> Result<()> {
         let campaign = &mut ctx.accounts.campaign;
         let owner = &mut ctx.accounts.owner;
 
         require!(owner.key() == campaign.owner, ErrorCode::NotOwner);
-        require!(campaign.status == "inactive" || campaign.status == "completed", ErrorCode::CannotWithdraw);
+        require!(campaign.status == CampaignStatus::Active, ErrorCode::CannotSetInactive);
 
-        let lamports = campaign.amount_collected;
+        campaign.status = CampaignStatus::Inactive;
+        emit!(CampaignStatusEvent {
+            campaign: campaign.key(),
+            status: CampaignStatus::Inactive,
+        });
+
+        Ok(())
+    }
+
+    pub fn withdraw_remaining_funds(ctx: Context<WithdrawRemainingFunds>) -> Result<()> {
+        let campaign = &mut ctx.accounts.campaign;
+        let owner = &mut ctx.accounts.owner;
+
+        require!(owner.key() == campaign.owner, ErrorCode::NotOwner);
+        require!(campaign.status == CampaignStatus::Inactive, ErrorCode::CampaignNotInactive);
+
+        let remaining_amount = campaign.amount_collected;
+        require!(remaining_amount > 0, ErrorCode::NoFundsAvailable);
+
         campaign.amount_collected = 0;
+        **owner.to_account_info().lamports.borrow_mut() += remaining_amount;
 
-        **owner.to_account_info().lamports.borrow_mut() += lamports;
+        emit!(WithdrawFundsEvent {
+            campaign: campaign.key(),
+            amount: remaining_amount,
+        });
+
         Ok(())
     }
 
@@ -124,6 +172,11 @@ pub mod solvent_fundraiser {
 
         **owner.to_account_info().lamports.borrow_mut() += unmatched_funds;
         global_pool.total_funds -= unmatched_funds;
+
+        emit!(WithdrawUnmatchedFundsEvent {
+            matcher: matcher.key(),
+            amount: unmatched_funds,
+        });
 
         Ok(())
     }
@@ -161,20 +214,26 @@ pub struct DonateToCampaign<'info> {
 }
 
 #[derive(Accounts)]
-pub struct MarkInactive<'info> {
+pub struct WithdrawAtMilestone<'info> {
     #[account(mut)]
     pub campaign: Account<'info, Campaign>,
     #[account(mut)]
-    /// CHECK: The owner of the campaign account is provided by the user and is expected to be valid.
     pub owner: Signer<'info>,
 }
 
 #[derive(Accounts)]
-pub struct WithdrawFunds<'info> {
+pub struct SetCampaignInactive<'info> {
     #[account(mut)]
     pub campaign: Account<'info, Campaign>,
     #[account(mut)]
-    /// CHECK: The owner of the campaign account is provided by the user and is expected to be valid.
+    pub owner: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct WithdrawRemainingFunds<'info> {
+    #[account(mut)]
+    pub campaign: Account<'info, Campaign>,
+    #[account(mut)]
     pub owner: Signer<'info>,
 }
 
@@ -183,7 +242,6 @@ pub struct WithdrawUnmatchedFunds<'info> {
     #[account(mut)]
     pub matcher: Account<'info, Matcher>,
     #[account(mut)]
-    /// CHECK: The owner of the matcher account is provided by the user and is expected to be valid.
     pub owner: Signer<'info>,
     #[account(mut)]
     pub global_pool: Account<'info, GlobalPool>,
@@ -191,7 +249,6 @@ pub struct WithdrawUnmatchedFunds<'info> {
 
 #[account]
 pub struct Campaign {
-    /// CHECK: The owner of the campaign account is provided by the user and is expected to be valid.
     pub owner: Pubkey,
     pub title: String,
     pub description: String,
@@ -202,7 +259,8 @@ pub struct Campaign {
     pub image: String,
     pub donators: Vec<Pubkey>,
     pub donations: Vec<u64>,
-    pub status: String, // Campaign status as a string
+    pub status: CampaignStatus,
+    pub next_withdrawal_threshold: u64,
 }
 
 #[account]
@@ -218,20 +276,58 @@ pub struct GlobalPool {
     pub matchers: Vec<Matcher>,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+pub enum CampaignStatus {
+    Active,
+    Inactive,
+    Completed,
+}
+
 #[error_code]
 pub enum ErrorCode {
-    #[msg("You must be the owner of the campaign to withdraw funds.")]
-    NotOwner,
-    #[msg("The campaign is currently inactive or completed.")]
+    #[msg("Campaign is inactive.")]
     CampaignInactive,
-    #[msg("The campaign is already inactive.")]
-    CampaignAlreadyInactive,
-    #[msg("You cannot withdraw funds until the campaign is inactive or completed.")]
-    CannotWithdraw,
-    #[msg("Invalid donation amount. Amount must be greater than zero.")]
+    #[msg("Invalid donation amount.")]
     InvalidDonationAmount,
-    #[msg("Insufficient funds to make the donation.")]
+    #[msg("Insufficient funds.")]
     InsufficientFunds,
-    #[msg("No unmatched funds available to withdraw.")]
+    #[msg("Not the owner of the campaign.")]
+    NotOwner,
+    #[msg("Invalid milestone for withdrawal.")]
+    InvalidMilestone,
+    #[msg("Campaign status is invalid for this operation.")]
+    InvalidStatus,
+    #[msg("No funds available for withdrawal.")]
+    NoFundsAvailable,
+    #[msg("Cannot set campaign to inactive from current status.")]
+    CannotSetInactive,
+    #[msg("Campaign is not inactive.")]
+    CampaignNotInactive,
+    #[msg("No unmatched funds available for withdrawal.")]
     NoUnmatchedFunds,
+}
+
+#[event]
+pub struct CampaignStatusEvent {
+    pub campaign: Pubkey,
+    pub status: CampaignStatus,
+}
+
+#[event]
+pub struct MilestoneWithdrawalEvent {
+    pub campaign: Pubkey,
+    pub milestone: u64,
+    pub amount: u64,
+}
+
+#[event]
+pub struct WithdrawFundsEvent {
+    pub campaign: Pubkey,
+    pub amount: u64,
+}
+
+#[event]
+pub struct WithdrawUnmatchedFundsEvent {
+    pub matcher: Pubkey,
+    pub amount: u64,
 }

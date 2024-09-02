@@ -4,3 +4,4 @@ export { default as CountBox } from './CountBox';
 export { default as CampaignCard } from './CampaignCard';
 export { default as CampaignDashboard } from './CampaignDashboard';
 export { default as ProfilePlaceholder } from './ProfilePlaceholder';
+export { default as Loader } from './Loader';

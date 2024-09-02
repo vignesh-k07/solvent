@@ -40,7 +40,7 @@ const previewItem: ICreateCampaign = {
 
 
 const StartACampaign = () => {
-  const { createCampaign } = useSolventContext();
+  const { createCampaign,initializeGlobalPool } = useSolventContext();
   const { push } = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState<ICreateCampaign>(previewItem);
@@ -92,44 +92,46 @@ const StartACampaign = () => {
       return;
     }
 
+    if (form.title.trim() === "" || form.title.length < 2 || form.title.length > 100) {
+      toast.error("Title must be between 2 and 100 characters");
+      throw new Error("Title must be between 2 and 100 characters");
+    }
+
+    if (isNaN(Number(form.target))) {
+      toast.error("Target must be a number");
+      setForm({ ...form, target: "" });
+      return;
+    }
+
+    if (form.description.trim() === "" || form.description.length < 10 || form.description.length > 2000) {
+      toast.error("Description must be between 10 and 2000 characters");
+      throw new Error("Description must be between 10 and 2000 characters");
+    }
+
+    const deadline = new Date(form.deadline);
+
+    if (deadline.getTime() < Date.now()) {
+      toast.error("Deadline must be in the future");
+      setForm({ ...form, deadline: "" });
+      throw new Error("Deadline must be in the future");
+    }
+
+    checkIfImage(form.image, async (isValid: boolean) => {
+      if (isValid) {
+        console.log("Image is valid");
+      } else {
+        toast.error(
+          "Provide valid image URL. The image could not be loaded."
+        );
+        setForm({ ...form, image: "" });
+        throw new Error("Provide valid image URL. The image could not be loaded.");
+      }
+    });
+    console.log(form, "form");
+
     setIsLoading(true);
     try {
-      if (form.title.trim() === "" || form.title.length < 2 || form.title.length > 100) {
-        toast.error("Title must be between 2 and 100 characters");
-        throw new Error("Title must be between 2 and 100 characters");
-      }
-
-      if (isNaN(Number(form.target))) {
-        toast.error("Target must be a number");
-        setForm({ ...form, target: "" });
-        return;
-      }
-
-      if (form.description.trim() === "" || form.description.length < 10 || form.description.length > 2000) {
-        toast.error("Description must be between 10 and 2000 characters");
-        throw new Error("Description must be between 10 and 2000 characters");
-      }
-
-      const deadline = new Date(form.deadline);
-
-      if (deadline.getTime() < Date.now()) {
-        toast.error("Deadline must be in the future");
-        setForm({ ...form, deadline: "" });
-        throw new Error("Deadline must be in the future");
-      }
-
-      checkIfImage(form.image, async (isValid: boolean) => {
-        if (isValid) {
-          console.log("Image is valid");
-        } else {
-          toast.error(
-            "Provide valid image URL. The image could not be loaded."
-          );
-          setForm({ ...form, image: "" });
-          throw new Error("Provide valid image URL. The image could not be loaded.");
-        }
-      });
-      console.log(form, "form");
+     
       const transactionId = await createCampaign(form);
       console.log("Create Campaign: " + transactionId);
       toast.success("Campaign created successfully!");
@@ -143,6 +145,23 @@ const StartACampaign = () => {
     }
   };
 
+  //initialize global pool
+  async function initGlobalPool() {
+    console.log("Initializing global pool");
+
+    if(!initializeGlobalPool) return;
+    console.log("Initializing global pool");
+    try {
+      const transactionId = await initializeGlobalPool();
+      console.log("Initialized global pool: " + transactionId);
+      toast.success("Initialized global pool successfully!");
+    } catch (error: any) {      
+      console.log(error);
+    }
+  }
+
+
+
   return (
     <section className={styles.campaign}>
       <div className={styles.campaignHeaderWrapper}>
@@ -151,7 +170,7 @@ const StartACampaign = () => {
             <Link href="/dashboard" className={styles.campaignNavIcon}>
               <BsArrowLeftSquareFill color="#EEF7FF" size={24} />
             </Link>
-            <div className={styles.campaignTitle}>Start Campaign</div>
+            <div className={styles.campaignTitle} onClick={initGlobalPool}>Start Campaign</div>
           </div>
           <Link href="/dashboard" className={styles.primaryButton}>
             Dashboard

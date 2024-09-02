@@ -4,19 +4,18 @@ import Image from "next/image";
 import tagLogo from "../../public/icons/solvent-main-logo.png";
 import { daysLeft, formatWalletAddress } from "../utils/constants";
 import ProfilePlaceholder from "./ProfilePlaceholder";
-import prevImage from "../../public/images/prevImg.png"
-import { ICampaign } from "@/app/dashboard/page";
+import prevImage from "../../public/images/prevImg.png";
+
 import { useEffect } from "react";
-
-
+import { ICampaign } from "@/context/solvent-context";
+import Link from "next/link";
 
 interface IProps {
   campaign: ICampaign;
+  url?: string;
 }
 
-const FundCard = ({
-  campaign
-}: IProps) => {
+const FundCard = ({ campaign, url }: IProps) => {
   const remainingDays = daysLeft(campaign.deadline);
 
   const handleClick = () => {
@@ -24,7 +23,8 @@ const FundCard = ({
   };
 
   return (
-    <div
+    <Link
+      href={url ?? ""}
       className="sm:w-[288px] w-full rounded-[15px] bg-[#1c1c24] cursor-pointer shadow-lg shadow-[#7C93C3]/5 hover:shadow-[#7C93C3]/10  hover:scale-[101%] transition-all duration-300 ease-in-out"
       onClick={handleClick}
     >
@@ -61,10 +61,10 @@ const FundCard = ({
         <div className="flex justify-between flex-wrap mt-[15px] gap-2">
           <div className="flex flex-col">
             <h4 className="font-epilogue font-semibold text-[14px] text-[#b2b3bd] leading-[22px]">
-              {campaign.amountCollected.toNumber() / LAMPORTS_PER_SOL}
+              {campaign.amountCollected / LAMPORTS_PER_SOL}
             </h4>
             <p className="mt-[3px] font-epilogue font-normal text-[12px] leading-[18px] text-[#808191] sm:max-w-[120px] truncate">
-              Raised of {campaign.target.toNumber() / LAMPORTS_PER_SOL}
+              Raised of {campaign.target / LAMPORTS_PER_SOL}
             </p>
           </div>
           <div className="flex flex-col">
@@ -79,7 +79,7 @@ const FundCard = ({
 
         <div className="flex items-center mt-[20px] gap-[12px]">
           <div className="w-[30px] h-[30px] rounded-full flex justify-center items-center bg-[#13131a]">
-            <ProfilePlaceholder/>
+            <ProfilePlaceholder />
           </div>
           <p className="flex-1 font-epilogue font-normal text-[12px] text-[#808191] truncate">
             by{" "}
@@ -89,7 +89,7 @@ const FundCard = ({
           </p>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
