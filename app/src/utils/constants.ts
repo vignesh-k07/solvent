@@ -55,18 +55,16 @@ export const getRandomColor = () => {
   return color;
 };
 
-export const daysLeft = (deadlineBn: BN) => {
-    // Get the current time in milliseconds as a BN instance
-    const currentTimeBn = new BN(Date.now());
+export const daysLeft = (deadline: number) => {
+  // Ensure that the deadline is a valid timestamp
+  if (isNaN(deadline) || deadline <= 0) {
+      return "Invalid deadline";
+  }
 
-    // Calculate the difference in milliseconds
-    const differenceBn = deadlineBn.sub(currentTimeBn);
+  const difference = deadline - Date.now(); // Use deadline directly as a timestamp
+  const remainingDays = difference / (1000 * 3600 * 24);
 
-    // Convert the difference to days
-    const remainingDays = differenceBn.div(new BN(1000 * 3600 * 24)); // Milliseconds in a day
-
-    // Return the remaining days as a number
-    return remainingDays.toNumber(); // Convert BN back to a number
+  return remainingDays > 0 ? remainingDays.toFixed(0) : "0"; // Return 0 if deadline has passed
 };
   
 export const calculateBarPercentage = (goal:number, raisedAmount:number) => {

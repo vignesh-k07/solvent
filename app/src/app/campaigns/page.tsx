@@ -2,8 +2,8 @@
 
 import { IoSearchOutline } from "react-icons/io5";
 
-import { FundCard } from "@/components";
-import { useSolventContext } from "@/context/solvent-context";
+import { FundCard, Loader } from "@/components";
+import { ICampaign, useSolventContext } from "@/context/solvent-context";
 import { BN } from "@coral-xyz/anchor";
 import {
   useAnchorWallet,
@@ -14,6 +14,7 @@ import { PublicKey } from "@solana/web3.js";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { GrDashboard } from "react-icons/gr";
+import { Oval } from "react-loader-spinner";
 
 const styles = {
   dashboard: `w-full h-screen flex flex-col`,
@@ -28,48 +29,39 @@ const styles = {
   searchInput: `peer h-full w-full outline-none text-sm text-[#EEF7FF] bg-transparent pr-2`,
   primaryButton: `w-fit h-fit text-center text-sm font-semibold text-[#EEF7FF]  px-4 py-2 rounded-md capitalize bg-[#2C2D30] bg-opacity-100 hover:bg-opacity-70 transition-opacity duration-100 ease-in-out`,
   dashboardBodyWrapper: `w-full h-fit min-h-96 px-2 border-b-[1px] border-[#EEF7FF] border-opacity-5 rouded-md`,
-  dashboardBody: `w-full xl:w-10/12 h-full flex flex-wrap items-center justify-start gap-10 mx-auto px-2 py-10`,
+  dashboardBody: `w-full xl:w-10/12 h-full flex flex-wrap items-center justify-evenly gap-10 mx-auto px-2 py-10`,
 };
-export interface ICampaign {
-  publicKey: PublicKey;
-  owner: PublicKey;
-  title: string;
-  description: string;
-  target: BN;
-  deadline: BN;
-  amountCollected: BN;
-  totalMatched: BN;
-  image: string;
-  donators: PublicKey[];
-  donations: PublicKey[];
-  status: {
-    active?: {};
-    cancelled?: {};
-    completed?: {};
-  };
-}
+
 const Campaigns = () => {
-  const { getCampaigns } = useSolventContext();
-  const [campaigns, setCampaigns] = useState<ICampaign[]>([]);
+  const { getCampaigns, campaigns, setCampaigns } = useSolventContext();
   const wallet = useAnchorWallet(); //wallet for sign and pay
   const { connection } = useConnection(); //connection for send transaction
   const { publicKey, signTransaction, sendTransaction } = useWallet();
-  const filterCampaigns = campaigns?.filter((el) => el.status.active);
+  const filterCampaigns = campaigns?.filter((el) => el.status === "active");
+
+  const [isLoading, setIsLoading] = useState(false);
 
   //get campaigns
   useEffect(() => {
     const getAllCampaigns = async () => {
+      setIsLoading(true);
       try {
         const campaigns = await getCampaigns();
         console.log(campaigns);
-        setCampaigns(campaigns.reverse());
+        setCampaigns(campaigns);
+        setIsLoading(false);
       } catch (error) {
+        setIsLoading(false);
         console.log(error);
       }
     };
     getAllCampaigns();
     // eslint-disable-next-line
   }, [wallet, connection]);
+
+  if (isLoading) {
+    return <Loader isLoading={isLoading} />;
+  }
 
   return (
     <section className={styles.dashboard}>
@@ -108,15 +100,13 @@ const Campaigns = () => {
         <div className={styles.dashboardBody}>
           {campaigns &&
             campaigns.length > 0 &&
-            campaigns.map((el, index) => {
-              const serializedCampaign = encodeURIComponent(JSON.stringify(el));
+            campaigns.reverse().map((el, index) => {
               return (
-                <Link
-                  href={`/campaigns/donate?campaign=${serializedCampaign}`}
+                <FundCard
                   key={index}
-                >
-                  <FundCard campaign={el} />
-                </Link>
+                  campaign={el}
+                  url={`/campaigns/donate/${el.publicKey}`}
+                />
               );
             })}
         </div>

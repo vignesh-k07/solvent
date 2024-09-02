@@ -23,6 +23,7 @@ import {
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
+import { format } from "path";
 //ts-ignore
 import React, {
   createContext,
@@ -47,15 +48,38 @@ export interface ICreateCampaign {
   image: string;
 }
 
+export interface ICampaign {
+  publicKey: string;
+  owner: PublicKey;
+  title: string;
+  description: string;
+  target: number;
+  deadline: number;
+  amountCollected: number;
+  totalMatched: number;
+  image: string;
+  donators: string[];
+  donations: string[];
+  status: string;
+}
+
 type SolventContextValue = {
   theme: Theme;
-  makePaymentForRentExemption: (
+  mountedRef: MutableRefObject<boolean>;
+  campaigns: ICampaign[];
+  setCampaigns: React.Dispatch<React.SetStateAction<ICampaign[]>>;
+  makePayment: (
     toAccount: Keypair,
     lamports: number
   ) => Promise<string>;
   createCampaign: (data: ICreateCampaign) => Promise<any>;
-  getCampaigns: () => Promise<any>;
-  mountedRef: MutableRefObject<boolean>;
+  getCampaigns: () => Promise<ICampaign[]>;
+  donateToCampaign: (
+    campaignAccount: PublicKey,
+    owner: PublicKey,
+    amount: number
+  ) => Promise<string>;
+  initializeGlobalPool?: () => Promise<string>;
 };
 
 export const SolventContext = createContext<SolventContextValue | null>(null);
@@ -64,6 +88,7 @@ export default function SolventContextProvider({
   children,
 }: SolventContextProviderProps) {
   const [theme, setTheme] = useState<Theme>("light");
+  const [campaigns, setCampaigns] = useState<ICampaign[]>([]);
 
   // Define reference for tracking component mounted state.
   const mountedRef = useRef(false);
@@ -82,7 +107,7 @@ export default function SolventContextProvider({
   const { connection } = useConnection(); //connection for send transaction
 
   //send sol for getMinimumBalanceForRentExemption
-  const makePaymentForRentExemption = async (
+  const makePayment = async (
     toAccount: Keypair,
     lamports: number
   ) => {
@@ -114,6 +139,67 @@ export default function SolventContextProvider({
     return signature;
   };
 
+  //initialize global pool
+  const initializeGlobalPool = async () => {
+    if (!wallet || !connection || !signTransaction || !publicKey) {
+      throw new Error("Missing required parameters.");
+    }
+
+    const globalPoolAccount = Keypair.generate();
+
+    const provider = new AnchorProvider(connection, wallet, {
+      preflightCommitment: "processed",
+    });
+
+    const program = new Program(
+      SOLVENT_PROGRAM_INTERFACE,
+      provider
+    ) as Program<SolventFundraiser>;
+
+    const lamports = 0.1 * LAMPORTS_PER_SOL;
+
+    // Fund the campaign account
+    await makePayment(
+      globalPoolAccount,
+      lamports
+    );
+
+    const initAccounts = {
+      globalPool: globalPoolAccount.publicKey,
+      payer: provider.wallet.publicKey,
+      system_program: SystemProgram.programId,
+    };
+
+    const initTokenAmountBn = new BN(0.05 * LAMPORTS_PER_SOL);
+
+
+    const txnInstruction = await program.methods
+      .initializeGlobalPool(initTokenAmountBn)
+      .accounts(initAccounts)
+      .signers([globalPoolAccount]).instruction();
+
+      const transaction = new Transaction().add(txnInstruction);
+      console.log("Global pool initialized:");
+
+
+      const {
+        context: { slot: minContextSlot },
+        value: { blockhash, lastValidBlockHeight },
+      } = await connection.getLatestBlockhashAndContext();
+  
+      const signature = await sendTransaction(transaction, connection, {
+        minContextSlot,
+      });
+  
+      await connection.confirmTransaction({
+        blockhash,
+        lastValidBlockHeight,
+        signature,
+      });
+
+       return signature;
+  };
+
   //create campaign
   const createCampaign = async (campaignData: ICreateCampaign) => {
     if (
@@ -143,7 +229,7 @@ export default function SolventContextProvider({
       );
 
     // Fund the campaign account
-    await makePaymentForRentExemption(
+    await makePayment(
       campaignAccount,
       lamportsforRentExemption
     );
@@ -160,7 +246,7 @@ export default function SolventContextProvider({
 
     const deadlineBn = new BN(new Date(campaignData.deadline).getTime());
 
-    const txn = await program.methods
+    const txnInstruction = await program.methods
       .createCampaign(
         campaignData.title,
         campaignData.description,
@@ -170,9 +256,26 @@ export default function SolventContextProvider({
       )
       .accounts(initAccounts)
       .signers([campaignAccount])
-      .rpc();
+      .instruction();
 
-    return txn;
+      const transaction = new Transaction().add(txnInstruction);
+
+      const {
+        context: { slot: minContextSlot },
+        value: { blockhash, lastValidBlockHeight },
+      } = await connection.getLatestBlockhashAndContext();
+  
+      const signature = await sendTransaction(transaction, connection, {
+        minContextSlot,
+      });
+  
+      await connection.confirmTransaction({
+        blockhash,
+        lastValidBlockHeight,
+        signature,
+      });
+
+       return signature;
   };
 
   //get campaigns
@@ -198,17 +301,81 @@ export default function SolventContextProvider({
       publicKey: el.publicKey.toString(), // Convert PublicKey to string
       ...el.account, // Spread the account properties directly
     }));
-    return campaigns;
+
+    let formattedCampaigns = campaigns.map((el) => {
+      return {
+        publicKey: el.publicKey,
+        owner: el.owner,
+        title: el.title,
+        description: el.description,
+        target: el.target.toNumber(),
+        deadline: el.deadline.toNumber(),
+        amountCollected: el.amountCollected.toNumber(),
+        totalMatched: el.totalMatched.toNumber(),
+        image: el.image,
+        donators: el.donators.map((el) => el.toString()),
+        donations: el.donations.map((el) => el.toString()),
+        status: el.status,
+      };
+    });
+
+    return formattedCampaigns;
   };
 
+  //donate to campaign
+  const donateToCampaign = async (
+    campaignAccount: PublicKey,
+    owner: PublicKey,
+    amount: number
+  ) => {
+    if (!wallet || !connection || !signTransaction || !publicKey) {
+      throw new Error("Missing required parameters.");
+    }
+
+    const provider = new AnchorProvider(connection, wallet, {
+      preflightCommitment: "processed",
+    });
+
+    const program = new Program(
+      SOLVENT_PROGRAM_INTERFACE,
+      provider
+    ) as Program<SolventFundraiser>;
+
+    const [globalPoolPDA, _] = await web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("global-pool")], // A seed to derive the PDA
+      program.programId
+    );
+
+    const initAccounts = {
+      campaign: campaignAccount,
+      donor: wallet.publicKey,
+      globalPool: globalPoolPDA,
+      owner: new PublicKey(owner),
+      system_program: SystemProgram.programId,
+    };
+
+    const donateAmountBn = new BN(Number(amount) * LAMPORTS_PER_SOL);
+
+    const txn = await program.methods
+      .donateToCampaign(donateAmountBn)
+      .accounts(initAccounts)
+      .signers([])
+      .rpc();
+
+      return txn;
+  };
   return (
     <SolventContext.Provider
       value={{
         theme,
-        makePaymentForRentExemption,
+        mountedRef,
+        campaigns,
+        setCampaigns,
+        makePayment,
         createCampaign,
         getCampaigns,
-        mountedRef,
+        donateToCampaign,
+        initializeGlobalPool
       }}
     >
       {children}

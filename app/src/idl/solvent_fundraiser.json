@@ -1,5 +1,5 @@
 {
-  "address": "AkGXFCnWivhLPY3qAY9973BV2XCLBv9UZKYM3YyENmV3",
+  "address": "5HqykVFF3Gjo3iQYaCkmEQG7zqYaPNZC3nupXA5ndzs8",
   "metadata": {
     "name": "solvent_fundraiser",
     "version": "0.1.0",
@@ -132,16 +132,16 @@
       ]
     },
     {
-      "name": "mark_inactive",
+      "name": "set_campaign_inactive",
       "discriminator": [
-        77,
-        63,
-        143,
-        104,
-        53,
-        126,
-        92,
-        6
+        220,
+        157,
+        160,
+        173,
+        170,
+        177,
+        151,
+        228
       ],
       "accounts": [
         {
@@ -157,16 +157,41 @@
       "args": []
     },
     {
-      "name": "withdraw_funds",
+      "name": "withdraw_at_milestone",
       "discriminator": [
-        241,
-        36,
-        29,
-        111,
-        208,
-        31,
-        104,
-        217
+        160,
+        171,
+        151,
+        143,
+        63,
+        224,
+        15,
+        203
+      ],
+      "accounts": [
+        {
+          "name": "campaign",
+          "writable": true
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdraw_remaining_funds",
+      "discriminator": [
+        37,
+        75,
+        244,
+        129,
+        60,
+        98,
+        134,
+        150
       ],
       "accounts": [
         {
@@ -252,41 +277,110 @@
       ]
     }
   ],
+  "events": [
+    {
+      "name": "CampaignStatusEvent",
+      "discriminator": [
+        24,
+        215,
+        71,
+        0,
+        12,
+        254,
+        205,
+        250
+      ]
+    },
+    {
+      "name": "MilestoneWithdrawalEvent",
+      "discriminator": [
+        191,
+        242,
+        125,
+        233,
+        201,
+        220,
+        68,
+        98
+      ]
+    },
+    {
+      "name": "WithdrawFundsEvent",
+      "discriminator": [
+        58,
+        194,
+        121,
+        69,
+        49,
+        139,
+        53,
+        200
+      ]
+    },
+    {
+      "name": "WithdrawUnmatchedFundsEvent",
+      "discriminator": [
+        235,
+        242,
+        86,
+        244,
+        122,
+        11,
+        35,
+        1
+      ]
+    }
+  ],
   "errors": [
     {
       "code": 6000,
-      "name": "NotOwner",
-      "msg": "You must be the owner of the campaign to withdraw funds."
+      "name": "CampaignInactive",
+      "msg": "Campaign is inactive."
     },
     {
       "code": 6001,
-      "name": "CampaignInactive",
-      "msg": "The campaign is currently inactive or completed."
+      "name": "InvalidDonationAmount",
+      "msg": "Invalid donation amount."
     },
     {
       "code": 6002,
-      "name": "CampaignAlreadyInactive",
-      "msg": "The campaign is already inactive."
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds."
     },
     {
       "code": 6003,
-      "name": "CannotWithdraw",
-      "msg": "You cannot withdraw funds until the campaign is inactive or completed."
+      "name": "NotOwner",
+      "msg": "Not the owner of the campaign."
     },
     {
       "code": 6004,
-      "name": "InvalidDonationAmount",
-      "msg": "Invalid donation amount. Amount must be greater than zero."
+      "name": "InvalidMilestone",
+      "msg": "Invalid milestone for withdrawal."
     },
     {
       "code": 6005,
-      "name": "InsufficientFunds",
-      "msg": "Insufficient funds to make the donation."
+      "name": "InvalidStatus",
+      "msg": "Campaign status is invalid for this operation."
     },
     {
       "code": 6006,
+      "name": "NoFundsAvailable",
+      "msg": "No funds available for withdrawal."
+    },
+    {
+      "code": 6007,
+      "name": "CannotSetInactive",
+      "msg": "Cannot set campaign to inactive from current status."
+    },
+    {
+      "code": 6008,
+      "name": "CampaignNotInactive",
+      "msg": "Campaign is not inactive."
+    },
+    {
+      "code": 6009,
       "name": "NoUnmatchedFunds",
-      "msg": "No unmatched funds available to withdraw."
+      "msg": "No unmatched funds available for withdrawal."
     }
   ],
   "types": [
@@ -341,7 +435,52 @@
           },
           {
             "name": "status",
-            "type": "string"
+            "type": {
+              "defined": {
+                "name": "CampaignStatus"
+              }
+            }
+          },
+          {
+            "name": "next_withdrawal_threshold",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CampaignStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Inactive"
+          },
+          {
+            "name": "Completed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CampaignStatusEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "campaign",
+            "type": "pubkey"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "CampaignStatus"
+              }
+            }
           }
         ]
       }
@@ -383,6 +522,58 @@
           },
           {
             "name": "unmatched_funds",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MilestoneWithdrawalEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "campaign",
+            "type": "pubkey"
+          },
+          {
+            "name": "milestone",
+            "type": "u64"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WithdrawFundsEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "campaign",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "WithdrawUnmatchedFundsEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "matcher",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
             "type": "u64"
           }
         ]

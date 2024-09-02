@@ -9,8 +9,8 @@ const getRandomColor = () => {
     return color;
   };
 
-  const fillColor1 = getRandomColor();
-  const fillColor2 = getRandomColor();
+  const fillColor1 = '#55679C';
+  const fillColor2 = '#1E2A5E';
   
 const ProfilePlaceholder = () => {
     return (
