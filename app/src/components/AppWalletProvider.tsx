@@ -1,16 +1,14 @@
 "use client";
 
-import React, { useMemo } from "react";
+import { HELIUM_RPC_ENDPOINT_DEVNET } from "@/utils/constants";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import {
   ConnectionProvider,
   WalletProvider,
 } from "@solana/wallet-adapter-react";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { clusterApiUrl } from "@solana/web3.js";
-import { HELIUM_RPC_ENDPOINT_DEVNET } from "@/utils/constants";
-// import { UnsafeBurnerWalletAdapter } from "@solana/wallet-adapter-wallets";
- 
+import React, { useMemo } from "react";
+
 // Default styles that can be overridden by your app
 require("@solana/wallet-adapter-react-ui/styles.css");
 
